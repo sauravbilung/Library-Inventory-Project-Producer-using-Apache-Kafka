@@ -1,0 +1,29 @@
+spring:
+  profiles:   # for setting profiles for different environments like local,dev and prod etc.
+    active: local # change here to configure our project for different environment
+---
+spring:
+  profiles: local # local environment configuration
+  kafka:
+    producer:
+      bootstrap-servers: localhost:9092,localhost:9093,localhost:9094  # all kafka brokers addresses
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer # coz libraryEventId is integer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer # coz we will treat book as a string while processing
+---
+spring:
+  profiles: dev # dev environment configuration
+  kafka:
+    producer:
+      bootstrap-servers: dev:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+---
+spring:
+  profiles: prod # prod environment configuration
+  kafka:
+    producer:
+      bootstrap-servers: prod:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      
