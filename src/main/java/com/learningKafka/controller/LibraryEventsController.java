@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.learningKafka.domain.LibraryEvent;
+import com.learningKafka.domain.LibraryEventType;
 import com.learningKafka.producer.LibraryEventProducer;
 
 @RestController
@@ -21,6 +23,8 @@ public class LibraryEventsController {
 	public ResponseEntity<LibraryEvent> postLibraryEvent(@RequestBody LibraryEvent libraryEvent)
 			throws JsonProcessingException {
 
+		// libraryEventType is set to "NEW" for POST
+		
 		// ############################################################################
 		// ############ Asynchronous Behavior #########################################
 
@@ -36,6 +40,7 @@ public class LibraryEventsController {
 		// it will go to ready queue and it will be scheduled once again by OS.
 
 		/*
+		 * libraryEvent.setLibraryEventType(LibraryEventType.NEW);
 		 * libraryEventProducer.sendLibraryEventAsynchronous(libraryEvent); return
 		 * ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
 		 */
@@ -47,6 +52,7 @@ public class LibraryEventsController {
 		// completes publishing to kafka topic then return will be executed.
 
 		/*
+		 * libraryEvent.setLibraryEventType(LibraryEventType.NEW);
 		 * libraryEventProducer.sendLibraryEventSynchronous(libraryEvent); return
 		 * ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
 		 */
@@ -54,9 +60,28 @@ public class LibraryEventsController {
 		// ############################################################################
 		// ########### Asynchronous Behavior with producer record #####################
 
+		libraryEvent.setLibraryEventType(LibraryEventType.NEW);
 		libraryEventProducer.sendLibraryEventUsingProducerRecord(libraryEvent);
 		return ResponseEntity.status(HttpStatus.CREATED).body(libraryEvent);
 
+	}
+	
+	@PutMapping("/v1/libraryevent")
+	public ResponseEntity<?> putLibraryEvent(@RequestBody LibraryEvent libraryEvent) throws JsonProcessingException{
+		
+		if(libraryEvent.getLibraryEventId() == null) {
+			
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Please pass the libraryEventId.");
+		}
+		
+		// LibraryEventType.UPDATE indicates an update process
+		// HttpStatus.OK for successful completion of task.
+		
+		// Using the Asynchronous behavior with Producer Record
+		libraryEvent.setLibraryEventType(LibraryEventType.UPDATE);
+		libraryEventProducer.sendLibraryEventUsingProducerRecord(libraryEvent);
+		return ResponseEntity.status(HttpStatus.OK).body(libraryEvent);
+		
 	}
 
 }

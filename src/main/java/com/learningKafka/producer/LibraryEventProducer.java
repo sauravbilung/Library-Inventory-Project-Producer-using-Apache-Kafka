@@ -1,8 +1,12 @@
 package com.learningKafka.producer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.internals.RecordHeader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -21,7 +25,7 @@ public class LibraryEventProducer {
 	// Hard coding topic name
 	String topic = "library-events";
 
-	@Autowired
+	@Autowired // template for executing high level operations
 	KafkaTemplate<Integer, String> kafkaTemplate;
 
 	@Autowired
@@ -85,8 +89,15 @@ public class LibraryEventProducer {
 		Integer key = libraryEvent.getLibraryEventId();
 		String value = objectMapper.writeValueAsString(libraryEvent);
 
+		// ProducerRecord : A key/value pair to be sent to Kafka. This consists of a
+		// topic name to which the record is being sent, an optional partition number,
+		// and an optional key and value.
 		ProducerRecord<Integer, String> producerRecord = buildProducerRecord(key, value, topic);
 
+		// the above two approaches read the topic name from application.yml file but
+		// through this approach(producer record) we send the data to N number of topics
+		// this happens because of send() of KafkaTemple. Inside it we manually set
+		// the topic name
 		ListenableFuture<SendResult<Integer, String>> listenableFuture = kafkaTemplate.send(producerRecord);
 		listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
 
@@ -105,9 +116,16 @@ public class LibraryEventProducer {
 		});
 	}
 
+	// Producer Record is generic class <Key,Value>.
 	private ProducerRecord<Integer, String> buildProducerRecord(Integer key, String value, String topic) {
 
-		return new ProducerRecord<Integer, String>(topic, null, key, value, null);
+		// Adding header to the ProducerRecord.
+		// Kafka Headers add additional information to the record that
+		// we are publishing to the topic.
+		List<Header> recordHeaders= new ArrayList<Header>();
+		recordHeaders.add(new RecordHeader("event-source", "scanner".getBytes()));
+		
+		return new ProducerRecord<Integer, String>(topic, null, key, value, recordHeaders);
 	}
 
 	protected void handleFailure(Integer key, String value, Throwable ex) {

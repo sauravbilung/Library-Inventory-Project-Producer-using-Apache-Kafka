@@ -8,7 +8,7 @@ spring:
     template:      default-topic: library-events  # default topic for kafka template in libraryEventProducer
     producer:
       bootstrap-servers: localhost:9092,localhost:9093,localhost:9094  # all kafka brokers addresses
-      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer # coz libraryEventId is integer
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer # coz libraryEventId is integer in LibraryEvent
       value-serializer: org.apache.kafka.common.serialization.StringSerializer # coz we will treat book as a string while processing
     admin:      properties: 
          bootstrap.servers: localhost:9092,localhost:9093,localhost:9094          
