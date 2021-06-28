@@ -30,6 +30,7 @@ Kafka Console Consumer reading the records from the topic.
 5. Event(Record) in the topic will be retained for a certain time.
 
 **Developed in Java version 8 and Spring Boot version 2**
+Consumer project related to it : https://github.com/sauravbilung/Library-Inventory-Project-Consumer-using-Apache-Kafka
 
 
 
